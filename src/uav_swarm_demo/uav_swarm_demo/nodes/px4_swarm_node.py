@@ -10,6 +10,7 @@ Frame convention:
   Conversion ENU→NED: vx_ned=vy_enu, vy_ned=vx_enu, vz_ned=-vz_enu
 """
 
+import math
 import time
 from enum import Enum, auto
 
@@ -334,7 +335,7 @@ class PX4SwarmNode(Node):
 
         if self._wp_idx >= len(self._path):
             leader = self._uavs[0]
-            if (leader.x - POINT_B_ENU[0]) ** 2 + (leader.y - POINT_B_ENU[1]) ** 2 < 1.0:
+            if math.hypot(leader.x - POINT_B_ENU[0], leader.y - POINT_B_ENU[1]) < 1.0:
                 for uav in self._uavs:
                     uav.flight_state = FlightState.ARRIVED
                 self._goal_reached = True

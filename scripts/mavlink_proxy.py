@@ -140,9 +140,7 @@ def _uav_thread(recv_port: int, px4_gcs_port: int) -> None:
 
         try:
             data, addr = sock.recvfrom(4096)
-        except socket.timeout:
-            continue
-        except OSError:
+        except (socket.timeout, OSError):
             continue
 
         if not data or data[0] not in (0xFE, 0xFD):

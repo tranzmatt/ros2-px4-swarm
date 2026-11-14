@@ -61,7 +61,7 @@ class LeaderFollowerFormation:
         return (rx, ry)
 
     def _clamp_velocity(self, vx: float, vy: float) -> Tuple[float, float]:
-        speed = math.sqrt(vx ** 2 + vy ** 2)
+        speed = math.hypot(vx, vy)
         if speed > self.max_speed:
             scale = self.max_speed / speed
             return (vx * scale, vy * scale)
@@ -69,7 +69,7 @@ class LeaderFollowerFormation:
 
     def get_leader_heading(self, leader: UAVState) -> float:
         """Heading angle from leader's velocity vector."""
-        if abs(leader.vx) < 1e-6 and abs(leader.vy) < 1e-6:
+        if math.hypot(leader.vx, leader.vy) < 1e-6:
             return 0.0
         return math.atan2(leader.vy, leader.vx)
 
@@ -140,29 +140,16 @@ class LeaderFollowerFormation:
         Returns:
             (vx, vy), updated_wp_index
         """
-        if current_wp_index >= len(waypoints):
-            return (0.0, 0.0), current_wp_index
-
-        wx, wy = waypoints[current_wp_index]
-        target_x = wx * grid_resolution
-        target_y = wy * grid_resolution
-
-        ex = target_x - leader.x
-        ey = target_y - leader.y
-        dist = math.sqrt(ex ** 2 + ey ** 2)
-
-        # Advance to next waypoint when close enough
-        if dist < 0.3 * grid_resolution:
-            current_wp_index += 1
-            if current_wp_index >= len(waypoints):
-                return (0.0, 0.0), current_wp_index
+        while current_wp_index < len(waypoints):
             wx, wy = waypoints[current_wp_index]
-            target_x = wx * grid_resolution
-            target_y = wy * grid_resolution
-            ex = target_x - leader.x
-            ey = target_y - leader.y
+            ex = wx * grid_resolution - leader.x
+            ey = wy * grid_resolution - leader.y
 
-        vx = self.k_p * ex
-        vy = self.k_p * ey
-        vx, vy = self._clamp_velocity(vx, vy)
-        return (vx, vy), current_wp_index
+            # Advance to next waypoint if already close enough
+            if math.hypot(ex, ey) >= 0.3 * grid_resolution:
+                vx, vy = self._clamp_velocity(self.k_p * ex, self.k_p * ey)
+                return (vx, vy), current_wp_index
+
+            current_wp_index += 1
+
+        return (0.0, 0.0), current_wp_index

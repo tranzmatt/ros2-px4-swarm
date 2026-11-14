@@ -18,13 +18,13 @@ Pipeline (runs every timer tick):
   4. Publish     → PoseArray + MarkerArray (RViz) + nav_msgs/Path (A* path)
 """
 
+import math
+
 import rclpy
 from rclpy.node import Node
-from rclpy.parameter import Parameter
 
-from geometry_msgs.msg import PoseArray, Pose, Point, Vector3
+from geometry_msgs.msg import Point, Pose, PoseArray, PoseStamped, Vector3
 from nav_msgs.msg import Path
-from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import ColorRGBA, Header
 from visualization_msgs.msg import Marker, MarkerArray
 
@@ -59,30 +59,15 @@ class SwarmControllerNode(Node):
         super().__init__('swarm_controller')
 
         # ── Parameters ────────────────────────────────────────────────────
-        self.declare_parameter('start_x',         0)
-        self.declare_parameter('start_y',         0)
-        self.declare_parameter('goal_x',          19)
-        self.declare_parameter('goal_y',          19)
-        self.declare_parameter('grid_resolution', 1.0)   # m / cell
-        self.declare_parameter('altitude',        5.0)   # fixed Z (m)
-        self.declare_parameter('max_speed',       2.0)   # m/s
-        self.declare_parameter('update_rate',     10.0)  # Hz
-        self.declare_parameter('frame_id',        'map')
-
-        p = self.get_parameters([
-            'start_x', 'start_y', 'goal_x', 'goal_y',
-            'grid_resolution', 'altitude', 'max_speed',
-            'update_rate', 'frame_id',
-        ])
-        self._sx        = p[0].value
-        self._sy        = p[1].value
-        self._gx        = p[2].value
-        self._gy        = p[3].value
-        self._res       = p[4].value        # grid_resolution
-        self._alt       = p[5].value        # altitude
-        self._max_spd   = p[6].value
-        self._rate      = p[7].value
-        self._frame     = p[8].value
+        self._sx      = self.declare_parameter('start_x',         0).value
+        self._sy      = self.declare_parameter('start_y',         0).value
+        self._gx      = self.declare_parameter('goal_x',          19).value
+        self._gy      = self.declare_parameter('goal_y',          19).value
+        self._res     = self.declare_parameter('grid_resolution', 1.0).value   # m / cell
+        self._alt     = self.declare_parameter('altitude',        5.0).value   # fixed Z (m)
+        self._max_spd = self.declare_parameter('max_speed',       2.0).value   # m/s
+        self._rate    = self.declare_parameter('update_rate',     10.0).value  # Hz
+        self._frame   = self.declare_parameter('frame_id',        'map').value
 
         # ── Global planner (A*) ───────────────────────────────────────────
         self._map = _build_default_map()
@@ -184,7 +169,7 @@ class SwarmControllerNode(Node):
         if self._wp_idx >= len(self._path):
             gx_m = self._gx * self._res
             gy_m = self._gy * self._res
-            if (leader.x - gx_m) ** 2 + (leader.y - gy_m) ** 2 < 0.25:
+            if math.hypot(leader.x - gx_m, leader.y - gy_m) < 0.5:
                 self._goal_reached = True
                 self.get_logger().info('Goal reached! Swarm stopped.')
 
