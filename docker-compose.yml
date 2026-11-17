@@ -1,6 +1,7 @@
 services:
   swarm_env:
     build: .
+    image: px4_swarm_jazzy:latest
     container_name: px4_swarm_jazzy
     network_mode: "host"       # Chia sẻ mạng lưới DDS với host
     privileged: true

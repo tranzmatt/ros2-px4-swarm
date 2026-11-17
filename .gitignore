@@ -20,9 +20,6 @@ __pycache__/
 # Claude Code
 .claude/
 
-# Docker
-.dockerignore
-
 # OS
 .DS_Store
 Thumbs.db

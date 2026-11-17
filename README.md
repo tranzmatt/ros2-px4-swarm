@@ -89,6 +89,7 @@ Tạo file `~/ros2_ws/docker-compose.yml`:
 services:
   swarm_env:
     build: .
+    image: px4_swarm_jazzy:latest
     container_name: px4_swarm_jazzy
     network_mode: "host"
     privileged: true
@@ -189,7 +190,7 @@ Nhấn `Ctrl+C` trong terminal đang chạy script. Script tự dọn dẹp toà
 ├── Dockerfile                              # ROS 2 Jazzy + PX4 SITL + px4_msgs
 ├── docker-compose.yml
 ├── scripts/
-│   └── gcs_heartbeat.py                   # Giả lập GCS heartbeat cho PX4 SITL
+│   └── mavlink_proxy.py                   # Giả lập GCS heartbeat & proxy MAVLink cho PX4 SITL
 └── src/
     └── uav_swarm_demo/
         ├── run.sh                          # Launcher tự chứa
@@ -220,7 +221,7 @@ PX4 SITL với nhiều instance sử dụng namespace khác nhau:
 
 ### GCS Heartbeat
 
-PX4 SITL từ chối ARM nếu không có kết nối GCS. Script `scripts/gcs_heartbeat.py` gửi MAVLink v1 heartbeat (type=GCS, sysid=255) đến port UDP 18570/18571/18572 của từng instance — không cần cài `pymavlink`.
+PX4 SITL từ chối ARM nếu không có kết nối GCS. Script `scripts/mavlink_proxy.py` gửi MAVLink v1 heartbeat (type=GCS, sysid=255) đến port UDP 18570/18571/18572 của từng instance — không cần cài `pymavlink`.
 
 ### Cấu hình Bầy đàn
 

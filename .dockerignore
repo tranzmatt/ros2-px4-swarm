@@ -1,0 +1,17 @@
+.git
+.github
+docs/*.png
+docs/*.jpg
+build/
+install/
+log/
+*.ulg
+*.bag
+__pycache__/
+*.py[cod]
+.vscode/
+.claude/
+.gemini/
+.idea/
+.DS_Store
+Thumbs.db
